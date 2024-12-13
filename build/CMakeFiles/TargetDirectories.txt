@@ -1,0 +1,4 @@
+/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/build/CMakeFiles/fluid.dir
+/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/build/CMakeFiles/fluid-run.dir
+/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/build/CMakeFiles/edit_cache.dir
+/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/build/CMakeFiles/rebuild_cache.dir

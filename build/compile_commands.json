@@ -1,0 +1,17 @@
+[
+{
+  "directory": "/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/build",
+  "command": "/usr/bin/c++ -DSIZES=\"S(14, 5),S(10, 10),S(36, 84)\" -DTYPES=\"DOUBLE,FLOAT,FAST_FIXED(32, 16)\" -I/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/include -g0 -O2 -std=gnu++20 -o CMakeFiles/fluid.dir/src/main.cpp.o -c /home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/src/main.cpp",
+  "file": "/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/src/main.cpp"
+},
+{
+  "directory": "/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/build",
+  "command": "/usr/bin/c++ -DSIZES=\"S(14, 5),S(10, 10),S(36, 84)\" -DTYPES=\"DOUBLE,FLOAT,FAST_FIXED(32, 16)\" -I/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/include -g0 -O2 -std=gnu++20 -o CMakeFiles/fluid.dir/src/Const.cpp.o -c /home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/src/Const.cpp",
+  "file": "/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/src/Const.cpp"
+},
+{
+  "directory": "/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/build",
+  "command": "/usr/bin/c++ -DSIZES=\"S(14, 5),S(10, 10),S(36, 84)\" -DTYPES=\"DOUBLE,FLOAT,FAST_FIXED(32, 16)\" -I/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/include -g0 -O2 -std=gnu++20 -o CMakeFiles/fluid.dir/src/argv_parse.cpp.o -c /home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/src/argv_parse.cpp",
+  "file": "/home/kuraterut/Desktop/HSE/cpp-course/SavvaHM2/fluid-2/src/argv_parse.cpp"
+}
+]

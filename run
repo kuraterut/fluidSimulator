@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -e
+
+TARGET="fluid"
+BUILD_TYPE="Release"
+
+# More types, slow compilation:
+ARGS=(
+    '--p-type=FAST_FIXED(32, 16)'
+    '--v-type=FAST_FIXED(32, 16)'
+    '--v-flow-type=FAST_FIXED(32, 16)'
+    '--file=tests/data_heavy.in'
+    '--savefile=saves/file1.out'
+)
+TYPES='DOUBLE,FLOAT,FAST_FIXED(32, 16)'
+SIZES='S(14, 5),S(10, 10),S(36, 84)'
+
+# Build
+ROOT_DIR="$(realpath "$(dirname -- "$0")")"
+BUILD_DIR="$ROOT_DIR/build"
+
+mkdir -p "$BUILD_DIR"
+
+cmake \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=true \
+    -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+    -DTYPES="$TYPES" \
+    -DSIZES="$SIZES" \
+    -B "$BUILD_DIR" \
+    -S "$ROOT_DIR"
+
+# Link compile_commands.json
+ln -sf "$BUILD_DIR/compile_commands.json" "$ROOT_DIR"
+
+# Run
+cmake --build "$BUILD_DIR" --target "$TARGET" -- -j4
+"$BUILD_DIR/fluid" "${ARGS[@]}"
