@@ -33,7 +33,7 @@ class Fluid {
         int     UT = 0;
         VType   g;
         PType   rho[256];
-        size_t start_tick = 0;
+        size_t  start_tick = 0;
 
         unique_ptr<AbstractMatrix<PType>>   p       = nullptr;
         unique_ptr<AbstractMatrix<PType>>   old_p   = nullptr;
@@ -66,10 +66,17 @@ class Fluid {
     private:
         // void saveSignalOn(int _);
         void save_to_file(size_t tick);
+        
         void save_field(const AbstractMatrix<char>& field, ofstream& file);
         void save_velocity(const AbstractMatrix<array<VType, deltas.size()>>& velocity, ofstream& file);
         void save_last_use(const AbstractMatrix<int>& last_use, ofstream& file);
         void save_p(const AbstractMatrix<PType>& p, ofstream& file);
+        void save_RHO(const PType rho[256], ofstream& file);
+
+        void read_velocity(ifstream& file);
+        void read_last_use(ifstream& file);
+        void read_p(ifstream& file);
+
 
         bool read_line(ifstream& fin, string& line);
 
@@ -80,10 +87,13 @@ class Fluid {
         void read_G(ifstream &fin);
 
         void read_RHO(ifstream &fin);
+
+        void read_default_file(ifstream& fin);
+        void read_save_file(ifstream& fin);
+        void read_main_data_from_savefile(ifstream& fin);
         
     friend ParticleParams<PType, VType>;
 };
-
 
 
 
@@ -116,6 +126,18 @@ void Fluid<PType, VType, VFType>::save_velocity(const AbstractMatrix<array<VType
 }
 
 template<typename PType, typename VType, typename VFType>
+void Fluid<PType, VType, VFType>::save_RHO(const PType rho[256], ofstream& file){
+    for(int i = 0; i < 256; ++i){
+        if (double(rho[i]) != 0){
+            string ans = "";
+            ans.push_back(char(i));
+            ans += " " + to_string(rho[i]) + "\n";
+            file << ans;
+        }
+    }
+}
+
+template<typename PType, typename VType, typename VFType>
 void Fluid<PType, VType, VFType>::save_last_use(const AbstractMatrix<int>& last_use, ofstream& file) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
@@ -135,6 +157,77 @@ void Fluid<PType, VType, VFType>::save_p(const AbstractMatrix<PType>& p, ofstrea
     }
 }
 
+template<typename PType, typename VType, typename VFType>
+void Fluid<PType, VType, VFType>::read_velocity(ifstream& fin){
+    string line;
+    stringstream ss;
+
+    for (size_t i = 0; i < n; ++i) {
+        if (!read_line(fin, line)) {
+            throw runtime_error("Не удалось прочитать параметр velocity");
+        }
+        for (size_t j = 0; j < m; ++j) {
+            ss = stringstream{line};
+            double temp[4];
+            ss >> temp[0] >> temp[1] >> temp[2] >> temp[3];
+
+            (*velocity.v)[i][j][0] = VType(temp[0]);
+            (*velocity.v)[i][j][1] = VType(temp[1]);
+            (*velocity.v)[i][j][2] = VType(temp[2]);
+            (*velocity.v)[i][j][3] = VType(temp[3]);
+        }
+    }
+}
+
+
+template<typename PType, typename VType, typename VFType>
+void Fluid<PType, VType, VFType>::read_last_use(ifstream& fin){
+    string line;
+    stringstream ss;
+    for (size_t i = 0; i < n; ++i) {
+        if (!read_line(fin, line)) {
+            throw runtime_error("Не удалось прочитать параметр last_use");
+        }
+        for (size_t j = 0; j < m; ++j) {
+            ss = stringstream{line};
+            int temp;
+            ss >> temp;
+            (*last_use)[i][j] = temp;
+        }
+    }
+}
+
+template<typename PType, typename VType, typename VFType>
+void Fluid<PType, VType, VFType>::read_p(ifstream& fin){
+    string line;
+    stringstream ss;
+    for (size_t i = 0; i < n; ++i) {
+        if (!read_line(fin, line)) {
+            throw runtime_error("Не удалось прочитать параметр P");
+        }
+
+        for (size_t j = 0; j < m; ++j) {
+            ss = stringstream{line};
+            double temp;
+            ss >> temp;
+            (*p)[i][j] = PType(temp);
+        }
+    }
+}
+
+template<typename PType, typename VType, typename VFType>
+void Fluid<PType, VType, VFType>::read_main_data_from_savefile(ifstream& fin){
+    stringstream ss;
+    string line;
+
+    if (!read_line(fin, line)) {
+        throw runtime_error("Не удалось прочитать главные параметры из файла сохранения");
+    }
+    ss = stringstream{line};
+    if (!(ss >> n) || !(ss >> m) || !(ss >> start_tick) || !(ss >> UT) || !(ss >> g)) {
+        throw runtime_error("Не удалось прочитать главные параметры из файла сохранения");
+    }
+}
 
 template<typename PType, typename VType, typename VFType>
 void Fluid<PType, VType, VFType>::save_to_file(size_t tick){
@@ -142,22 +235,39 @@ void Fluid<PType, VType, VFType>::save_to_file(size_t tick){
     if (!file.is_open()) {
         cout << "Error: can`t open file `" << save_filename << "`" << endl;
     }
+    file << 1 << "\n";
     file << n << " " << m << " " << tick << " " << UT << " " << double(g) << "\n";
     save_field(*field, file);
     save_velocity(*(velocity.v), file);
     save_last_use(*last_use, file);
     save_p(*p, file); 
+    save_RHO(rho, file);
 }
 
 
+template<typename PType, typename VType, typename VFType>
+void Fluid<PType, VType, VFType>::read_save_file(ifstream& fin){
+    read_main_data_from_savefile(fin);
+
+    field.reset(create_matrix<char>{}(n, m + 1));
+    p.reset(create_matrix<PType>{}(n, m));
+    old_p.reset(create_matrix<PType>{}(n, m));
+    last_use.reset(create_matrix<int>{}(n, m));
+    dirs.reset(create_matrix<int>{}(n, m));
+
+    velocity = VectorField<VType>{n, m};
+    velocity_flow = VectorField<VFType>{n, m};
+
+    read_field(fin);
+    read_velocity(fin);
+    read_last_use(fin);
+    read_p(fin);
+    read_RHO(fin);
+}
+
 
 template<typename PType, typename VType, typename VFType>
-Fluid<PType, VType, VFType>::Fluid(const string& filename, bool need_save, const string& save_filename) {
-    ifstream fin(filename);
-    if (!fin) {
-        throw runtime_error("Не удалось открыть файл");
-    }
-
+void Fluid<PType, VType, VFType>::read_default_file(ifstream& fin){
     read_NM(fin);
 
     field.reset(create_matrix<char>{}(n, m + 1));
@@ -174,6 +284,30 @@ Fluid<PType, VType, VFType>::Fluid(const string& filename, bool need_save, const
     read_G(fin);
 
     read_RHO(fin);
+}
+
+
+template<typename PType, typename VType, typename VFType>
+Fluid<PType, VType, VFType>::Fluid(const string& filename, bool need_save, const string& save_filename) {
+    ifstream fin(filename);
+    if (!fin) {
+        throw runtime_error("Не удалось открыть файл");
+    }
+
+    int save_or_default_file;
+    stringstream ss;
+    string line;
+
+    if (!read_line(fin, line)) {
+        throw runtime_error("Не удалось прочитать");
+    }
+    ss = stringstream{line};
+    if (!(ss >> save_or_default_file)) {
+        throw runtime_error("Не удалось прочитать параметры N и M");
+    }
+
+    if(save_or_default_file == 0){read_default_file(fin);}
+    else{read_save_file(fin);}
 
     this->need_save = need_save;
     this->save_filename = save_filename;
@@ -459,21 +593,21 @@ bool Fluid<PType, VType, VFType>::propagate_move(int x, int y, bool is_first) {
 
 template<typename PType, typename VType, typename VFType>
 void Fluid<PType, VType, VFType>::read_RHO(ifstream &fin){
-            stringstream ss;
-            string line;
-            
-            while (read_line(fin, line)) {
-                if (line.find_first_not_of(' ') == string::npos || line.empty()) {
-                    break;
-                }
-
-                ss = stringstream{line};
-                char c = ss.get();
-                if (!(ss >> rho[c])) {
-                    throw runtime_error("Не удалось прочитать параметр RHO");
-                }
-            }
+    stringstream ss;
+    string line;
+    
+    while (read_line(fin, line)) {
+        if (line.find_first_not_of(' ') == string::npos || line.empty()) {
+            break;
         }
+
+        ss = stringstream{line};
+        char c = ss.get();
+        if (!(ss >> rho[c])) {
+            throw runtime_error("Не удалось прочитать параметр RHO");
+        }
+    }
+}
 
 template<typename PType, typename VType, typename VFType>
 void Fluid<PType, VType, VFType>::read_G(ifstream &fin){
@@ -513,7 +647,7 @@ void Fluid<PType, VType, VFType>::read_NM(ifstream &fin){
     string line;
 
     if (!read_line(fin, line)) {
-        throw runtime_error("Не удалось прочитать параметры N и M");
+        throw runtime_error("Не удалось прочитать");
     }
     ss = stringstream{line};
     if (!(ss >> n) || !(ss >> m)) {

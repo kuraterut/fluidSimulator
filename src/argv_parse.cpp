@@ -36,9 +36,11 @@ const string& ArgvParseResult::get_option(const string& opt_name) {
         if(opt_name == "savefile"){
             return "";
         }
-        stringstream ss;
-        ss << "Опция " << opt_name << " не найдена";
-        throw runtime_error(ss.str());
+        else{
+            stringstream ss;
+            ss << "Опция " << opt_name << " не найдена";
+            throw runtime_error(ss.str());
+        }
     }
     return named.at(opt_name);
 }

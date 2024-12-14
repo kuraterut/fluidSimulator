@@ -7,14 +7,14 @@ BUILD_TYPE="Release"
 
 # More types, slow compilation:
 ARGS=(
-    '--p-type=FAST_FIXED(32, 16)'
-    '--v-type=FAST_FIXED(32, 16)'
-    '--v-flow-type=FAST_FIXED(32, 16)'
-    '--file=tests/data_heavy.in'
-    '--savefile=saves/file1.out'
+    '--p-type=FAST_FIXED(17, 16)'
+    '--v-type=FAST_FIXED(17, 16)'
+    '--v-flow-type=FLOAT'
+    '--file=saves/file1.out'
+    '--savefile=saves/file2.out'
 )
-TYPES='DOUBLE,FLOAT,FAST_FIXED(32, 16)'
-SIZES='S(14, 5),S(10, 10),S(36, 84)'
+TYPES='DOUBLE,FLOAT,FAST_FIXED(17, 16)'
+SIZES='S(14, 5),S(10, 10),S(32, 80)'
 
 # Build
 ROOT_DIR="$(realpath "$(dirname -- "$0")")"
