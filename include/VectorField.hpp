@@ -51,7 +51,7 @@ T& VectorField<T>::get(int x, int y, int dx, int dy) {
     // case 4:
     //     return (*v)[x][y][3]; 
     // }
-    int i = ((dy & 1) << 1) | (((dx & 1) & ((dx & 2) >> 1)) | ((dy & 1) & ((dy & 2) >> 1)));
+    // int i = ((dy & 1) << 1) | (((dx & 1) & ((dx & 2) >> 1)) | ((dy & 1) & ((dy & 2) >> 1)));
     assert(v.get() != nullptr);
     size_t i = ranges::find(deltas, make_pair(dx, dy)) - deltas.begin();
     assert(i < deltas.size());
